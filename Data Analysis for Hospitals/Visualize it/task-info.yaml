@@ -1,0 +1,34 @@
+type: edu
+custom_name: Visualize it!
+files:
+  - name: analysis.py
+    visible: true
+    learner_created: false
+  - name: test/__init__.py
+    visible: false
+    learner_created: false
+  - name: test/general.csv
+    visible: false
+    is_binary: true
+    learner_created: false
+  - name: test/prenatal.csv
+    visible: false
+    is_binary: true
+    learner_created: false
+  - name: test/sports.csv
+    visible: false
+    is_binary: true
+    learner_created: false
+  - name: test/tests.py
+    visible: false
+    learner_created: false
+  - name: tests.py
+    visible: false
+    learner_created: false
+feedback_link: https://hyperskill.org/projects/152/stages/805/implement#comment
+status: Solved
+feedback:
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">Hyperskill</a>
+    to continue learning.
+  time: "Fri, 27 Sep 2024 11:46:01 UTC"
+record: -1
