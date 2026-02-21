@@ -4,4 +4,6 @@ matplotlib
 seaborn
 scikit-learn
 skl2onnx
+onnxruntime
+psutil
 https://github.com/hyperskill/hs-test-python/archive/release.tar.gz

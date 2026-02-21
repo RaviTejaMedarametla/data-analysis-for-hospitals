@@ -1,6 +1,6 @@
 # Research-Grade, Hardware-Aware Healthcare AI System
 
-This repository has been upgraded from a single-script EDA task into a modular, reproducible healthcare AI experimentation system targeting research and AI+hardware graduate portfolios.
+This repository is a modular, reproducible healthcare AI experimentation system with stronger research rigor, streaming realism, hardware-awareness, and deployment checks.
 
 ## Architecture
 
@@ -15,7 +15,7 @@ flowchart LR
     E --> G
     F --> G
     D --> H[deployment]
-    G --> I[artifacts + logs]
+    G --> I[artifacts + logs + metadata]
 ```
 
 ## Modules
@@ -25,14 +25,14 @@ Located in `Data Analysis for Hospitals/task/`:
 - `ingestion/`: dataset loading + dataset manifest hashing/versioning.
 - `preprocessing/`: cleaning, missing-value handling, canonical categories.
 - `feature_engineering/`: age and risk-oriented features.
-- `modeling/`: risk prediction + patient outcome classification.
-- `anomaly_detection/`: outlier detection, anomaly scoring, early-warning simulation.
-- `real_time/`: streaming simulation, incremental processing, latency/throughput measurements.
-- `evaluation/`: repeated benchmarking, confidence intervals, latency-vs-accuracy tradeoff, and hardware-constrained early-warning experiments.
-- `deployment/`: ONNX export and CPU inference-latency measurement.
-- `utils/`: reproducibility seeds, hardware constraint simulation, experiment logging, energy estimates.
+- `modeling/`: sklearn-based predictive models + repeated stratified CV + calibration reports.
+- `anomaly_detection/`: z-score detector, Isolation Forest detector, detector-comparison artifacts.
+- `real_time/`: batch/stream comparison and async queue simulation (jitter, buffer, backpressure).
+- `evaluation/`: benchmarking, confidence intervals, hardware-constrained early-warning, and time-aware alert metrics.
+- `deployment/`: ONNX export, ONNX parity validation, and CPU inference-latency measurement.
+- `utils/`: reproducibility seeds, hardware simulation, telemetry, runtime metadata, logging, energy estimates.
 - `config.py`: centralized experiment configuration.
-- `cli.py`: command-line interface for running the full pipeline.
+- `cli.py`: command-line interface for reproducible full-pipeline execution.
 
 ## Reproducible workflow
 
@@ -40,40 +40,72 @@ Located in `Data Analysis for Hospitals/task/`:
 cd "Data Analysis for Hospitals/task"
 python cli.py manifest
 python cli.py run
-```
-
-## Early-warning under hardware constraints
-
-Run targeted experiments that sweep memory limits, compute budgets, and streaming speeds:
-
-```bash
-cd "Data Analysis for Hospitals/task"
 python cli.py early-warning-experiment
 ```
 
-Measured metrics:
-- anomaly detection latency
-- prediction accuracy
-- false positives / false-positive rate
-- detection-quality proxy (`accuracy - 0.5 * FPR`)
+## What is newly enforced for research rigor
 
-Generated artifacts:
-- `artifacts/early_warning_hardware_experiment.csv`
-- `artifacts/latency_vs_accuracy.png`
-- `artifacts/resource_vs_detection_quality.png`
+### 1) Robust predictive modeling
+- Repeated stratified k-fold with multiple seeds.
+- Fold-level artifacts:
+  - `artifacts/predictive_cv_folds.csv`
+  - `artifacts/predictive_cv_report.json`
+- Calibration artifacts:
+  - `artifacts/predictive_reliability_curve.csv`
+- Metrics include accuracy, F1, AUC, and Brier score.
+
+### 2) Time-aware early-warning metrics
+- Temporal split utility via rolling-origin windows.
+- Detection delay distribution and early-warning gain.
+- False alarms per hour.
+- Precision-recall at configurable alert budgets.
+
+### 3) Realistic anomaly detection comparison
+- Baseline z-score vs Isolation Forest.
+- Robustness/detection quality comparison artifact:
+  - `artifacts/anomaly_detector_comparison.csv`
+
+### 4) Streaming and systems realism
+- Async simulation with variable arrivals, jitter, queue limits, and drop accounting.
+- Throughput/latency + queue/buffer stress indicators.
+
+### 5) Hardware and energy realism
+- Optional CPU/memory telemetry via `psutil`.
+- Optional measured energy via Intel RAPL when available.
+- Estimated-vs-measured energy comparison in pipeline output.
+
+### 6) Deployment readiness
+- sklearn-compatible predictive model for robust ONNX export.
+- ONNX parity check against Python inference (when onnxruntime is available).
+
+### 7) Reproducibility hardening
+- Global seed control.
+- Dataset fingerprinting (`dataset_manifest.json`).
+- Runtime metadata capture (`runtime_metadata.json`) including Python/platform/package versions.
+- Environment lockfile: `requirements-lock.txt`.
+
+### 8) CI and reliability
+GitHub Actions workflow (`.github/workflows/ci.yml`) runs:
+- compile checks,
+- legacy tests,
+- full pipeline and early-warning commands,
+- reproducibility tests,
+- deterministic artifact existence checks.
 
 ## Artifacts and benchmarking
 
-Artifacts are stored under `Data Analysis for Hospitals/task/artifacts/`:
-
-- `dataset_manifest.json` (dataset versioning)
-- `experiment_log.json` (structured run logging)
-- `risk_model.onnx` (if ONNX dependencies are available)
-- hardware experiment CSV + plots listed above
-
-Benchmark outputs include mean/std/CI for:
-- predictive risk accuracy runs
-- hardware-constrained early-warning latency/accuracy/FPR/quality
+Artifacts under `Data Analysis for Hospitals/task/artifacts/` include:
+- `dataset_manifest.json`
+- `experiment_log.json`
+- `runtime_metadata.json`
+- `risk_model.onnx` (if conversion succeeds)
+- `predictive_cv_folds.csv`
+- `predictive_cv_report.json`
+- `predictive_reliability_curve.csv`
+- `anomaly_detector_comparison.csv`
+- `early_warning_hardware_experiment.csv`
+- `latency_vs_accuracy.png`
+- `resource_vs_detection_quality.png`
 
 ## Legacy functionality preserved
 
@@ -84,17 +116,11 @@ cd "Data Analysis for Hospitals/task"
 python analysis.py
 ```
 
-It still emits three plots and three answer lines while now relying on reusable modular components.
+It still emits three plots and three answer lines.
 
-## CI and validation suggestions
+## Domain alignment narrative
 
-Use these commands in CI:
-
-```bash
-python -m compileall "Data Analysis for Hospitals/task"
-python "Data Analysis for Hospitals/task/tests.py"
-python "Data Analysis for Hospitals/task/cli.py" run
-python "Data Analysis for Hospitals/task/cli.py" early-warning-experiment
-```
-
-This validates code integrity, legacy behavior, full pipeline execution, and hardware-constrained early-warning artifact generation.
+The pipeline now includes explicit outputs that map to:
+- **ICU monitoring** (alert-latency vs sensitivity trade-offs),
+- **wearable edge AI** (memory/compute constrained sweeps),
+- **medical telemetry systems** (bursty async ingestion with queue/drop behavior).

@@ -14,6 +14,14 @@ class SystemConfig:
     hardware_compute_budget: int = 10_000
     benchmark_runs: int = 5
     confidence_level: float = 0.95
+    cv_splits: int = 5
+    cv_repeats: int = 2
+    cv_seeds: list[int] = field(default_factory=lambda: [7, 42, 99])
+    calibration_bins: int = 10
+    temporal_min_train: int = 300
+    temporal_horizon: int = 100
+    temporal_step: int = 50
+    alert_budget_fractions: list[float] = field(default_factory=lambda: [0.01, 0.05, 0.1, 0.2])
     feature_columns: list[str] = field(
         default_factory=lambda: ["age", "height", "weight", "bmi", "children", "months"]
     )

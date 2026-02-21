@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Compile
+        run: python -m compileall "Data Analysis for Hospitals/task"
+      - name: Legacy tests
+        run: python "Data Analysis for Hospitals/task/tests.py"
+      - name: Pipeline run
+        run: python "Data Analysis for Hospitals/task/cli.py" run
+      - name: Early-warning experiment
+        run: python "Data Analysis for Hospitals/task/cli.py" early-warning-experiment
+      - name: Reproducibility tests
+        run: python -m unittest "Data Analysis for Hospitals/task/test/test_research_pipeline.py"
+      - name: ONNX deterministic checks
+        run: |
+          test -f "Data Analysis for Hospitals/task/artifacts/predictive_cv_report.json"
+          test -f "Data Analysis for Hospitals/task/artifacts/dataset_manifest.json"
