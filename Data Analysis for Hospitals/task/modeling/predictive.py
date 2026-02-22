@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from utils.numpy_compat import integrate
+
 
 class SimpleLogisticModel:
     def __init__(self, lr: float = 0.01, epochs: int = 600):
@@ -55,16 +57,21 @@ def _f1(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 
 def _auc(y_true: np.ndarray, y_score: np.ndarray) -> float:
-    order = np.argsort(y_score)
-    ranks = np.empty_like(order)
-    ranks[order] = np.arange(len(y_score))
-    pos = y_true == 1
-    n_pos = pos.sum()
-    n_neg = len(y_true) - n_pos
+    order = np.argsort(y_score)[::-1]
+    y_sorted = y_true[order]
+
+    n_pos = int((y_sorted == 1).sum())
+    n_neg = len(y_sorted) - n_pos
     if n_pos == 0 or n_neg == 0:
         return 0.5
-    rank_sum = ranks[pos].sum()
-    return float((rank_sum - n_pos * (n_pos - 1) / 2) / (n_pos * n_neg))
+
+    tps = np.cumsum(y_sorted == 1)
+    fps = np.cumsum(y_sorted == 0)
+
+    tpr = np.concatenate(([0.0], tps / n_pos))
+    fpr = np.concatenate(([0.0], fps / n_neg))
+
+    return float(integrate(tpr, fpr))
 
 
 @dataclass

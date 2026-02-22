@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        numpy-version: ["1.26.4", "latest"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          if [ "${{ matrix.numpy-version }}" = "latest" ]; then
+            pip install --upgrade numpy
+          else
+            pip install --upgrade "numpy==${{ matrix.numpy-version }}"
+          fi
+      - name: Run NumPy compatibility tests
+        run: python -m unittest "Data Analysis for Hospitals/task/test_numpy_compat.py"
