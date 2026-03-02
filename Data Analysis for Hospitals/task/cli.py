@@ -19,12 +19,13 @@ from deployment.onnx_export import export_pipeline_to_onnx
 from deployment.monitoring import build_monitoring_summary
 from evaluation.benchmark import run_repeated_benchmark, benchmark_table_metrics
 from evaluation.metrics import latency_accuracy_tradeoff
+from evaluation.hardware_profile import build_hardware_profile_table, write_hardware_profile_artifacts
 from evaluation.early_warning_experiment import (
     ConstraintScenario,
     run_hardware_constrained_early_warning_experiment,
     summarize_experiment,
 )
-from utils.reproducibility import set_global_seed
+from utils.reproducibility import set_global_seed, reproducibility_context
 from utils.logging_utils import log_experiment
 from utils.hardware import HardwareProfile, auto_adjust_batch_size, compute_utilization
 from utils.energy import compare_precision_energy
@@ -80,9 +81,21 @@ def run_pipeline() -> dict:
         stream_latency_ms_per_row=stream_stats["stream_latency_ms_per_row"],
     )
 
-    bench = run_repeated_benchmark(lambda: evaluate_predictive_models(artifacts), metric_key="risk_accuracy", runs=CONFIG.benchmark_runs)
+    bench = run_repeated_benchmark(
+        lambda: evaluate_predictive_models(artifacts),
+        metric_key="risk_accuracy",
+        runs=CONFIG.benchmark_runs,
+        confidence=CONFIG.confidence_level,
+    )
     tradeoff = latency_accuracy_tradeoff(model_metrics["risk_accuracy"], inference_stats["inference_latency_ms"])
     energy = compare_precision_energy(runtime_s=inference_stats["inference_latency_ms"] / 1000, batch_size=adjusted_batch)
+
+    hardware_profile = build_hardware_profile_table(
+        feature_count=len(CONFIG.feature_columns),
+        batch_size=adjusted_batch,
+        stream_interval_ms=CONFIG.stream_interval_ms,
+    )
+    hardware_profile_artifacts = write_hardware_profile_artifacts(hardware_profile, CONFIG.output_dir)
 
     scenarios = _build_scenarios()
     exp_df, exp_artifacts = run_hardware_constrained_early_warning_experiment(
@@ -93,11 +106,16 @@ def run_pipeline() -> dict:
         output_dir=CONFIG.output_dir,
     )
     exp_summary = summarize_experiment(exp_df)
-    exp_benchmark = benchmark_table_metrics(exp_df, ["detection_latency_s", "prediction_accuracy", "false_positive_rate", "detection_quality"])
+    exp_benchmark = benchmark_table_metrics(
+        exp_df,
+        ["detection_latency_s", "prediction_accuracy", "false_positive_rate", "detection_quality"],
+        confidence=CONFIG.confidence_level,
+    )
 
     manifest = create_dataset_manifest(CONFIG.data_dir, CONFIG.output_dir / "dataset_manifest.json")
 
     results = {
+        "reproducibility": reproducibility_context(CONFIG),
         "predictive_metrics": model_metrics,
         "anomaly_alerts": early_warning,
         "detection_latency_s": latency,
@@ -108,6 +126,8 @@ def run_pipeline() -> dict:
         "benchmark": bench.__dict__,
         "latency_accuracy_tradeoff": tradeoff,
         "energy": energy,
+        "hardware_profile": hardware_profile,
+        "hardware_profile_artifacts": hardware_profile_artifacts,
         "risk_modeling": {
             "risk_band_summary": summarize_risk_bands(risk_frame),
             "high_risk_count": int((risk_frame["risk_band"] == "high").sum()),
@@ -151,7 +171,7 @@ def main() -> None:
             scenarios=_build_scenarios(),
             output_dir=CONFIG.output_dir,
         )
-        print(json.dumps({"summary": summarize_experiment(exp_df), "benchmark": benchmark_table_metrics(exp_df, ["detection_latency_s", "prediction_accuracy", "false_positive_rate", "detection_quality"]), "artifacts": exp_artifacts}, indent=2, default=float))
+        print(json.dumps({"summary": summarize_experiment(exp_df), "benchmark": benchmark_table_metrics(exp_df, ["detection_latency_s", "prediction_accuracy", "false_positive_rate", "detection_quality"], confidence=CONFIG.confidence_level), "artifacts": exp_artifacts}, indent=2, default=float))
         return
 
     print(json.dumps(run_pipeline(), indent=2, default=float))

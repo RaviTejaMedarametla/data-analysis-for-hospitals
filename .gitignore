@@ -1,0 +1,14 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Local IDE metadata
+.idea/
+.vscode/
+
+# Generated artifacts
+Data Analysis for Hospitals/task/artifacts/
+
+# Test and runtime caches
+.pytest_cache/
+.mypy_cache/

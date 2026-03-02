@@ -1,56 +1,34 @@
-# Hardware-Aware Early Warning and Predictive Healthcare AI
+# Hardware-Aware Early Warning and Predictive Analytics for Hospital Data
 
-This repository presents a **healthcare edge AI and early-warning systems project** focused on reliable, real-time risk detection in resource-constrained clinical environments.
+This repository contains a production-oriented analytics pipeline for tabular hospital datasets.
+It is designed to execute end-to-end on CPU-constrained environments while preserving deterministic behavior and auditability.
 
-It combines predictive modeling, streaming inference, and deployment-oriented evaluation to support **clinical early warning** while respecting hardware and energy limits.
+## Scope
 
-## Project focus
+The project focuses on four operational goals:
 
-- **Real-time monitoring:** continuous patient-data streaming and low-latency inference.
-- **Resource-constrained deployment:** CPU-first execution, memory-aware batching, and lightweight model export.
-- **Energy-efficient inference:** precision-aware energy estimation for edge deployment.
-- **Clinical early warning:** anomaly-triggered alerts with latency and false-positive tracking.
+- robust data ingestion and schema normalization,
+- predictive risk modeling and anomaly-triggered early warning,
+- streaming inference under constrained latency budgets,
+- deployment diagnostics for resource and reliability monitoring.
 
-## System architecture
+The implementation emphasizes incremental validation and reproducible outputs over one-off model results.
 
-```mermaid
-flowchart LR
-    A[Data Ingestion] --> B[Preprocessing]
-    B --> C[Feature Engineering]
-    C --> D[Risk Modeling]
-    C --> E[Anomaly & Early Warning]
-    C --> F[Streaming Inference]
-    D --> G[Evaluation]
-    E --> G
-    F --> G
-    D --> H[Edge Deployment]
-    H --> I[Monitoring Workflow]
-    G --> J[Artifacts & Reports]
-```
+## Repository layout
 
-Core modules are in `Data Analysis for Hospitals/task/`:
+Core code is located in `Data Analysis for Hospitals/task/`.
 
-- `ingestion/`: dataset loading and manifest versioning.
-- `preprocessing/`: data normalization and consistency cleanup.
-- `feature_engineering/`: risk-oriented feature creation.
-- `modeling/`: predictive and risk-stratification modeling.
-- `anomaly_detection/`: early-warning and latency evaluation.
-- `real_time/`: streaming simulation and online inference paths.
-- `deployment/`: ONNX export, CPU inference, and monitoring workflow generation.
-- `evaluation/`: benchmark summaries, trade-offs, and experiment analysis.
-- `utils/`: reproducibility, hardware profiling, logging, and energy models.
+- `ingestion/`: input loading and dataset manifest generation.
+- `preprocessing/`: cleaning and consistency checks.
+- `feature_engineering/`: derived feature construction.
+- `modeling/`: predictive and risk-band modeling.
+- `anomaly_detection/`: outlier detection and early-warning simulation.
+- `real_time/`: streaming utilities and online scoring.
+- `deployment/`: CPU inference, ONNX export, and monitoring summaries.
+- `evaluation/`: statistical metrics, benchmark utilities, and experiment summarization.
+- `utils/`: reproducibility, logging, and hardware/energy estimation helpers.
 
-## Edge monitoring design
-
-The edge-monitoring path is designed to fit low-resource clinical nodes:
-
-1. Patient records are ingested and normalized.
-2. Risk and anomaly scores are computed per stream chunk.
-3. Alert candidates are generated from anomaly thresholds.
-4. Alert and model-health counters are aggregated into a deployment monitoring workflow.
-5. Operators review drift/latency/alert-burden indicators for threshold tuning.
-
-## Deployment pipeline
+## Pipeline commands
 
 ```bash
 cd "Data Analysis for Hospitals/task"
@@ -59,41 +37,51 @@ python cli.py run
 python cli.py early-warning-experiment
 ```
 
-This pipeline produces artifacts such as dataset manifests, experiment logs, hardware-constrained early-warning outputs, and deployment workflow summaries in `Data Analysis for Hospitals/task/artifacts/`.
+Generated artifacts are written to `Data Analysis for Hospitals/task/artifacts/`.
 
-## Professional research additions
+## Design motivations and trade-offs
 
-### Risk modeling
+- **CPU-first execution:** prioritizes compatibility with common deployment targets; GPU-only optimizations are intentionally out of scope.
+- **Explicit hardware constraints:** memory limits and compute budgets are treated as first-class experiment parameters.
+- **Model simplicity vs. latency:** simpler models reduce inference cost but may underfit rare patterns; benchmark outputs expose this trade-off.
+- **Streaming vs. batch behavior:** stream chunking improves online responsiveness but can increase overhead and jitter at very small chunk sizes.
 
-The project includes risk-stratification outputs for clinically interpretable bands (`low`, `medium`, `high`) and triage-oriented prevalence reporting.
+## Performance constraints
 
-### Streaming inference
+- Throughput and latency depend on stream chunk size, feature dimensionality, and configured compute budget.
+- Memory pressure is sensitive to effective batch size and precision assumptions.
+- Repeated benchmark runs are required because single-run latency is noisy on shared or throttled hosts.
 
-A streaming inference utility converts chunked model probabilities into online risk labels and confidence traces for real-time deployment studies.
+## Failure modes and bottlenecks
 
-### Deployment + monitoring workflow
+Typical operational risks:
 
-A deployment monitoring summary tracks alert volume, alert rate, estimated drift, and timing of first-alert events to support operational handoff.
+- schema drift or missing columns in input CSV files,
+- high false-positive rates in anomaly-triggered alerts,
+- latency spikes from oversized stream chunks,
+- degraded detection quality under strict memory/compute envelopes,
+- serialization/export mismatch during ONNX conversion.
 
-## Evaluation methodology
+## Assumptions
 
-Evaluation combines:
+- Input CSV files follow the expected column schema used in feature generation.
+- Runtime has sufficient permissions to create files in the configured artifact directory.
+- The environment provides compatible versions of NumPy, pandas, and scikit-learn dependencies.
 
-- predictive metrics (accuracy/F1/AUC),
-- early-warning latency,
-- false-positive rate,
-- hardware-adjusted detection quality,
-- latency-vs-accuracy trade-off,
-- repeated benchmark aggregation (mean/std/CI).
+## Limitations
 
-This multi-axis methodology is intended to quantify both model performance and real-world deployability.
+- Energy and hardware functions provide coarse estimates, not device-calibrated measurements.
+- Default benchmarks are short and should be expanded for production sign-off.
+- Synthetic event construction in latency evaluation is a proxy and not a substitute for externally labeled event timelines.
 
-## Reliability and alert burden
 
-The project explicitly reports alert burden to address clinical usability risk:
+## Additional documentation
 
-- excessive alerting can degrade trust and induce alert fatigue,
-- low latency with high false positives is treated as suboptimal,
-- workflow metrics support threshold tuning and drift response.
+- Operational constraints and deployment considerations: `docs/OPERATIONS.md`.
 
-Reliability is assessed through repeated runs, confidence intervals, and deployment telemetry rather than single-run headline accuracy.
+
+## Dependency and CI policy
+
+- The repository uses standard Python tooling (`pytest`, `unittest`) and has no platform-specific testing dependencies.
+- CI targets Python 3.10 with pinned dependencies for reproducible execution.
+- Runtime and tests are designed for deterministic behavior via explicit seed and threading environment controls.
