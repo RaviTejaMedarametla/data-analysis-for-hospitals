@@ -16,6 +16,7 @@ from anomaly_detection.early_warning import simulate_early_warning, evaluate_det
 from real_time.streaming import compare_batch_vs_streaming
 from deployment.cpu_inference import run_cpu_inference
 from deployment.onnx_export import export_pipeline_to_onnx
+from deployment.monitoring import build_monitoring_summary
 from evaluation.benchmark import run_repeated_benchmark, benchmark_table_metrics
 from evaluation.metrics import latency_accuracy_tradeoff
 from evaluation.early_warning_experiment import (
@@ -27,6 +28,8 @@ from utils.reproducibility import set_global_seed
 from utils.logging_utils import log_experiment
 from utils.hardware import HardwareProfile, auto_adjust_batch_size, compute_utilization
 from utils.energy import compare_precision_energy
+from modeling.risk import stratify_risk, summarize_risk_bands
+from real_time.inference import run_streaming_inference
 
 
 def _build_scenarios() -> list[ConstraintScenario]:
@@ -68,6 +71,15 @@ def run_pipeline() -> dict:
     inference_stats = run_cpu_inference(artifacts.risk_model, artifacts.X_test)
     onnx_ok = export_pipeline_to_onnx(artifacts.risk_model, CONFIG.output_dir / "risk_model.onnx", n_features=len(CONFIG.feature_columns))
 
+    risk_probabilities = pd.Series(artifacts.risk_model.predict_proba(artifacts.X_test)[:, 1], index=artifacts.X_test.index)
+    risk_frame = stratify_risk(risk_probabilities)
+    streaming_output = run_streaming_inference(artifacts.X_test, artifacts.risk_model, CONFIG.stream_chunk_size)
+    monitoring = build_monitoring_summary(
+        alert_flags=(risk_frame["risk_band"] == "high").astype(int),
+        risk_probabilities=risk_frame["risk_probability"],
+        stream_latency_ms_per_row=stream_stats["stream_latency_ms_per_row"],
+    )
+
     bench = run_repeated_benchmark(lambda: evaluate_predictive_models(artifacts), metric_key="risk_accuracy", runs=CONFIG.benchmark_runs)
     tradeoff = latency_accuracy_tradeoff(model_metrics["risk_accuracy"], inference_stats["inference_latency_ms"])
     energy = compare_precision_energy(runtime_s=inference_stats["inference_latency_ms"] / 1000, batch_size=adjusted_batch)
@@ -96,6 +108,15 @@ def run_pipeline() -> dict:
         "benchmark": bench.__dict__,
         "latency_accuracy_tradeoff": tradeoff,
         "energy": energy,
+        "risk_modeling": {
+            "risk_band_summary": summarize_risk_bands(risk_frame),
+            "high_risk_count": int((risk_frame["risk_band"] == "high").sum()),
+        },
+        "streaming_inference": {
+            "records_scored": int(len(streaming_output)),
+            "high_risk_predictions": int(streaming_output["risk_label"].sum()),
+        },
+        "deployment_monitoring": monitoring,
         "early_warning_hardware_experiment": {
             "scenario_count": len(exp_df),
             "summary": exp_summary,
