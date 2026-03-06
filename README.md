@@ -1,35 +1,36 @@
-# Hardware-Aware Early Warning and Predictive Analytics for Hospital Data
+# Hospital Analytics Pipeline
 
-This repository contains a production-oriented analytics pipeline for tabular hospital datasets.
-It is designed to execute end-to-end on CPU-constrained environments while preserving deterministic behavior and auditability.
+## Overview
+This repository implements a hardware-aware machine learning pipeline for tabular hospital analytics with deterministic execution characteristics.
+The project is maintained as part of a broader AI systems engineering portfolio focused on hardware-aware machine learning, edge AI optimization, deterministic ML pipelines, and production ML systems.
 
-## Scope
+## System Architecture
+The pipeline is organized in modular stages under `Data Analysis for Hospitals/task/`:
 
-The project focuses on four operational goals:
-
-- robust data ingestion and schema normalization,
-- predictive risk modeling and anomaly-triggered early warning,
-- streaming inference under constrained latency budgets,
-- deployment diagnostics for resource and reliability monitoring.
-
-The implementation emphasizes incremental validation and reproducible outputs over one-off model results.
-
-## Repository layout
-
-Core code is located in `Data Analysis for Hospitals/task/`.
-
-- `ingestion/`: input loading and dataset manifest generation.
-- `preprocessing/`: cleaning and consistency checks.
-- `feature_engineering/`: derived feature construction.
-- `modeling/`: predictive and risk-band modeling.
-- `anomaly_detection/`: outlier detection and early-warning simulation.
-- `real_time/`: streaming utilities and online scoring.
+- `ingestion/`: dataset loading and manifest creation.
+- `preprocessing/`: schema validation and data quality normalization.
+- `feature_engineering/`: derived feature construction for downstream models.
+- `modeling/`: predictive modeling workflows.
+- `anomaly_detection/`: anomaly scoring and early warning simulation.
+- `real_time/`: streaming inference utilities.
 - `deployment/`: CPU inference, ONNX export, and monitoring summaries.
-- `evaluation/`: statistical metrics, benchmark utilities, and experiment summarization.
-- `utils/`: reproducibility, logging, and hardware/energy estimation helpers.
+- `evaluation/`: benchmarking and metric reporting.
+- `utils/`: reproducibility and runtime support utilities.
 
-## Pipeline commands
+## Features
+- End-to-end CLI-driven analytics workflow for manifest generation, pipeline execution, and early warning experiments.
+- Deterministic runtime controls for reproducible training and evaluation behavior.
+- Hardware-aware benchmark outputs covering latency, memory, and deployment-oriented diagnostics.
+- Artifact generation for experiment tracking and operational review.
 
+## Installation
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Usage
 ```bash
 cd "Data Analysis for Hospitals/task"
 python cli.py manifest
@@ -39,49 +40,19 @@ python cli.py early-warning-experiment
 
 Generated artifacts are written to `Data Analysis for Hospitals/task/artifacts/`.
 
-## Design motivations and trade-offs
+## Reproducibility
+- Use pinned dependencies from `requirements.txt`.
+- Execute the CLI commands from the same working directory and input datasets.
+- Run repository tests to verify deterministic behavior and environment compatibility.
 
-- **CPU-first execution:** prioritizes compatibility with common deployment targets; GPU-only optimizations are intentionally out of scope.
-- **Explicit hardware constraints:** memory limits and compute budgets are treated as first-class experiment parameters.
-- **Model simplicity vs. latency:** simpler models reduce inference cost but may underfit rare patterns; benchmark outputs expose this trade-off.
-- **Streaming vs. batch behavior:** stream chunking improves online responsiveness but can increase overhead and jitter at very small chunk sizes.
+## Related Projects
+This repository is part of the same AI systems portfolio as:
 
-## Performance constraints
+- `neural-network-systems`
+- `digit-classification-benchmark`
+- `edge-ai-model-optimization`
+- `hospital-analytics-pipeline`
+- `nba-data-engineering`
+- `ai-systems-ml-platform`
 
-- Throughput and latency depend on stream chunk size, feature dimensionality, and configured compute budget.
-- Memory pressure is sensitive to effective batch size and precision assumptions.
-- Repeated benchmark runs are required because single-run latency is noisy on shared or throttled hosts.
-
-## Failure modes and bottlenecks
-
-Typical operational risks:
-
-- schema drift or missing columns in input CSV files,
-- high false-positive rates in anomaly-triggered alerts,
-- latency spikes from oversized stream chunks,
-- degraded detection quality under strict memory/compute envelopes,
-- serialization/export mismatch during ONNX conversion.
-
-## Assumptions
-
-- Input CSV files follow the expected column schema used in feature generation.
-- Runtime has sufficient permissions to create files in the configured artifact directory.
-- The environment provides compatible versions of NumPy, pandas, and scikit-learn dependencies.
-
-## Limitations
-
-- Energy and hardware functions provide coarse estimates, not device-calibrated measurements.
-- Default benchmarks are short and should be expanded for production sign-off.
-- Synthetic event construction in latency evaluation is a proxy and not a substitute for externally labeled event timelines.
-
-
-## Additional documentation
-
-- Operational constraints and deployment considerations: `docs/OPERATIONS.md`.
-
-
-## Dependency and CI policy
-
-- The repository uses standard Python tooling (`pytest`, `unittest`) and has no platform-specific testing dependencies.
-- CI targets Python 3.10 with pinned dependencies for reproducible execution.
-- Runtime and tests are designed for deterministic behavior via explicit seed and threading environment controls.
+> Naming recommendation: consider renaming this repository on GitHub from `data-analysis-for-hospitals` to `hospital-analytics-pipeline` for portfolio consistency.
