@@ -6,8 +6,15 @@ __pycache__/
 .idea/
 .vscode/
 
-# Generated artifacts
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Generated artifacts and outputs
 Data Analysis for Hospitals/task/artifacts/
+outputs/
 
 # Test and runtime caches
 .pytest_cache/
