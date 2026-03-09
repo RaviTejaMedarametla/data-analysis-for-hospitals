@@ -91,12 +91,12 @@ def _prepare_X(df: pd.DataFrame, feature_cols: list[str]) -> pd.DataFrame:
     return X
 
 
-def train_predictive_models(df: pd.DataFrame, feature_cols: list[str], risk_target: str, outcome_target: str) -> ModelArtifacts:
+def train_predictive_models(df: pd.DataFrame, feature_cols: list[str], risk_target: str, outcome_target: str, split_seed: int = 42) -> ModelArtifacts:
     X = _prepare_X(df, feature_cols)
     y_risk = df[risk_target].isin(["appendicitis", "pregnancy"]).astype(int)
     y_outcome = (df[outcome_target] == "t").astype(int)
 
-    rng = np.random.default_rng(42)
+    rng = np.random.default_rng(split_seed)
     indices = np.arange(len(X))
     rng.shuffle(indices)
     split = int(len(X) * 0.75)
