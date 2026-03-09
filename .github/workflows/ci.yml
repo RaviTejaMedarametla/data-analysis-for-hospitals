@@ -20,20 +20,19 @@ jobs:
           python-version: "3.10"
           cache: "pip"
           cache-dependency-path: |
-            requirements.txt
+            requirements-lock.txt
 
-      - name: Install dependencies (reproducible)
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --requirement requirements.txt
+          pip install --requirement requirements-lock.txt
 
-      - name: Run unit tests
+      - name: Run tests with coverage
         run: |
-          pytest -q "Data Analysis for Hospitals/task/test_numpy_compat.py"
+          pytest
 
       - name: Run CLI smoke checks
         run: |
-          cd "Data Analysis for Hospitals/task"
-          python cli.py manifest > /tmp/manifest.json
-          python cli.py run > /tmp/run.json
-          python cli.py early-warning-experiment > /tmp/early_warning.json
+          python "Data Analysis for Hospitals/task/cli.py" manifest > /tmp/manifest.json
+          python "Data Analysis for Hospitals/task/cli.py" run > /tmp/run.json
+          python "Data Analysis for Hospitals/task/cli.py" ablation > /tmp/ablation.json

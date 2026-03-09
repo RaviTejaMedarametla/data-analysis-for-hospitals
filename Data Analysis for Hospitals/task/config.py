@@ -5,14 +5,18 @@ from pathlib import Path
 @dataclass
 class SystemConfig:
     random_seed: int = 42
+    split_seed: int = 42
+    benchmark_seed: int = 42
     test_size: float = 0.25
     data_dir: Path = Path(__file__).resolve().parent.parent / "test"
     output_dir: Path = Path(__file__).resolve().parent / "artifacts"
+    results_dir: Path = Path(__file__).resolve().parent / "results"
     stream_chunk_size: int = 16
     stream_interval_ms: int = 10
     hardware_memory_limit_mb: int = 256
     hardware_compute_budget: int = 10_000
-    benchmark_runs: int = 5
+    benchmark_runs: int = 10
+    benchmark_warmup_runs: int = 3
     confidence_level: float = 0.95
     feature_columns: list[str] = field(
         default_factory=lambda: ["age", "height", "weight", "bmi", "children", "months"]
@@ -26,3 +30,4 @@ class SystemConfig:
 
 CONFIG = SystemConfig()
 CONFIG.output_dir.mkdir(parents=True, exist_ok=True)
+CONFIG.results_dir.mkdir(parents=True, exist_ok=True)
