@@ -1,6 +1,6 @@
 # Data Analysis for Hospitals
 
-Graduate-admissions-ready overhaul of a reproducible hospital analytics pipeline with explicit benchmarking evidence.
+Comprehensive overhaul of a reproducible hospital analytics pipeline with explicit benchmarking evidence.
 
 ## What changed
 - Refactored monolithic CLI flow into modular pipeline stages (`pipeline/train.py`, `pipeline/evaluate.py`, `pipeline/anomaly.py`, `pipeline/deploy.py`, `pipeline/run.py`).
