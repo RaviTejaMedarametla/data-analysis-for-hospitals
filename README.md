@@ -1,14 +1,21 @@
 # Data Analysis for Hospitals
 
-Graduate-admissions-ready overhaul of a reproducible hospital analytics pipeline with explicit benchmarking evidence.
+A reproducible hospital analytics project that trains risk/outcome models, detects anomalies, and benchmarks deployment performance.
 
-## What changed
-- Refactored monolithic CLI flow into modular pipeline stages (`pipeline/train.py`, `pipeline/evaluate.py`, `pipeline/anomaly.py`, `pipeline/deploy.py`, `pipeline/run.py`).
-- Added measured deployment telemetry with ONNX Runtime (`deployment/onnx_inference.py`) and CPU comparison script (`deployment/benchmark_cpu.py`).
-- Added benchmark suite under `benchmarks/` for repeated latency, memory profiling, stage latency breakdown, and model comparison.
-- Added baseline models (`modeling/baselines.py`) and ablation studies (`experiments/ablations.py`).
-- Added reproducibility assets: configurable split/benchmark seeds, lock file, and full reproduction script.
-- Expanded tests and CI to run full pytest coverage.
+## Project overview
+- Ingests and harmonizes multi-source hospital datasets (general, prenatal, sports) into a unified analysis-ready table.
+- Trains predictive models for risk and outcome tasks, then evaluates accuracy, F1, and AUC.
+- Runs anomaly and early-warning analysis to flag unusual operational patterns.
+- Exports deployment artifacts and compares local CPU vs ONNX Runtime inference performance.
+- Supports repeatable experiments through fixed seeds, deterministic settings, and documented reproduction steps.
+
+## Repository structure
+- `Data Analysis for Hospitals/task/cli.py`: entrypoint for pipeline commands.
+- `Data Analysis for Hospitals/task/pipeline/`: orchestrated train/evaluate/anomaly/deploy workflow stages.
+- `Data Analysis for Hospitals/task/modeling/`: predictive models and baselines.
+- `Data Analysis for Hospitals/task/benchmarks/`: latency and memory benchmarking utilities.
+- `Data Analysis for Hospitals/task/deployment/`: ONNX export/inference and deployment benchmarking.
+- `docs/`: dataset, experiments, and research notes.
 
 ## Run
 ```bash
