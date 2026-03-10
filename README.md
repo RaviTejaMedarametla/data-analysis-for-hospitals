@@ -1,6 +1,6 @@
 # Data Analysis for Hospitals
 
-A reproducible hospital analytics project that trains risk/outcome models, detects anomalies, and benchmarks deployment performance.
+Comprehensive overhaul of a reproducible hospital analytics pipeline with explicit benchmarking evidence.
 
 ## Project overview
 - Ingests and harmonizes multi-source hospital datasets (general, prenatal, sports) into a unified analysis-ready table.
