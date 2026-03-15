@@ -1,21 +1,41 @@
-# Python bytecode
+# Python
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 
-# Local IDE metadata
-.idea/
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# IDE
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# Outputs
+artifacts/
+results/*.csv
+results/*.png
+results/*.json
+results/*.log
 
 # Notebook checkpoints
 .ipynb_checkpoints/
 
-# Logs
-*.log
-
-# Generated artifacts and outputs
-Data Analysis for Hospitals/task/artifacts/
-outputs/
-
-# Test and runtime caches
-.pytest_cache/
-.mypy_cache/
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
